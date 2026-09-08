@@ -1,0 +1,6 @@
+find_package(Qt6 REQUIRED COMPONENTS Test)
+qt_add_executable(core_tests test_greeting.cpp)
+target_link_libraries(core_tests PRIVATE app_core Qt6::Test)
+add_test(NAME core_tests COMMAND core_tests)
+add_test(NAME gui_smoke COMMAND QTdemo --smoke-test)
+set_tests_properties(gui_smoke PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 15)

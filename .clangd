@@ -1,0 +1,5 @@
+# Relative to this file; usable by VS Code and command-line clangd alike.
+CompileFlags:
+  CompilationDatabase: build/debug
+Index:
+  Background: Build

@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Debug", "type": "process", "command": "python",
+      "args": ["${workspaceFolder}/scripts/dev.py", "build", "--preset", "debug"],
+      "problemMatcher": "$gcc", "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Test Debug", "type": "process", "command": "python",
+      "args": ["${workspaceFolder}/scripts/dev.py", "test"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Package Release", "type": "process", "command": "python",
+      "args": ["${workspaceFolder}/scripts/dev.py", "package"],
+      "problemMatcher": []
+    }
+  ]
+}

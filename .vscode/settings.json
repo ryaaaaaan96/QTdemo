@@ -1,0 +1,22 @@
+{
+  "cmake.cmakePath": "${env:CMAKE_ROOT}/bin/cmake.exe",
+  "cmake.ctestPath": "${env:CMAKE_ROOT}/bin/ctest.exe",
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": true,
+  "clangd.path": "${env:LLVM_ROOT}/bin/clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=${env:LLVM_ROOT}/bin/clang++.exe"
+  ],
+  "clangd.detectExtensionConflicts": true,
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "C_Cpp.autocomplete": "disabled",
+  "C_Cpp.errorSquiggles": "disabled",
+  "editor.formatOnSave": true,
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:CMAKE_ROOT}/bin;${env:NINJA_ROOT};${env:LLVM_ROOT}/bin;${env:QT_ROOT}/bin;${env:PATH}"
+  }
+}

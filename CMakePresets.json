@@ -1,0 +1,84 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-clang",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "environment": {
+        "PATH": "$env{LLVM_ROOT}/bin;$env{QT_ROOT}/bin;$env{CMAKE_ROOT}/bin;$env{NINJA_ROOT};$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "$env{LLVM_ROOT}/bin/clang++.exe",
+        "CMAKE_MAKE_PROGRAM": "$env{NINJA_ROOT}/ninja.exe",
+        "CMAKE_PREFIX_PATH": "$env{QT_ROOT}",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/stage/${presetName}",
+        "CPACK_IFW_ROOT": "$env{IFW_ROOT}",
+        "CPACK_IFW_FRAMEWORK_VERSION_FORCED": "$env{IFW_VERSION}",
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "windows-clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "windows-clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "installer",
+      "configurePreset": "release",
+      "generators": [
+        "IFW"
+      ]
+    },
+    {
+      "name": "portable",
+      "configurePreset": "release",
+      "generators": [
+        "ZIP"
+      ]
+    }
+  ]
+}

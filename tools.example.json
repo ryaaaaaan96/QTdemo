@@ -1,0 +1,8 @@
+{
+  "QT_ROOT": "C:/Qt/6.8.3/llvm-mingw_64",
+  "LLVM_ROOT": "C:/Qt/Tools/llvm-mingw1706_64",
+  "CMAKE_ROOT": "C:/Qt/Tools/CMake_64",
+  "NINJA_ROOT": "C:/Qt/Tools/Ninja",
+  "IFW_ROOT": "C:/Qt/Tools/QtInstallerFramework/4.11",
+  "IFW_VERSION": "4.11.0"
+}

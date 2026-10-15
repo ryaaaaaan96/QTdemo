@@ -1,6 +1,16 @@
 find_package(Qt6 REQUIRED COMPONENTS Test)
-qt_add_executable(core_tests test_greeting.cpp)
+qt_add_executable(core_tests test_runtime.cpp)
 target_link_libraries(core_tests PRIVATE app_core Qt6::Test)
+target_compile_definitions(core_tests PRIVATE EXAMPLE_CONFIG_PATH="${PROJECT_SOURCE_DIR}/config/examples/simulated.json")
 add_test(NAME core_tests COMMAND core_tests)
+qt_add_executable(page_tests test_pages.cpp)
+target_link_libraries(page_tests PRIVATE app_ui Qt6::Test)
+target_compile_definitions(page_tests PRIVATE EXAMPLE_CONFIG_PATH="${PROJECT_SOURCE_DIR}/config/examples/simulated.json")
+add_test(NAME page_tests COMMAND page_tests)
+set_target_properties(core_tests page_tests PROPERTIES WIN32_EXECUTABLE FALSE)
 add_test(NAME gui_smoke COMMAND QTdemo --smoke-test)
-set_tests_properties(gui_smoke PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 15)
+set_tests_properties(page_tests gui_smoke PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software" TIMEOUT 20)
+set_tests_properties(core_tests page_tests gui_smoke PROPERTIES
+    FAIL_REGULAR_EXPRESSION "QThread: Destroyed;Cannot create children;Timers cannot be;QObject::killTimer")
+set_tests_properties(core_tests PROPERTIES TIMEOUT 20)

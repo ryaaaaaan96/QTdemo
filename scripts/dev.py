@@ -17,7 +17,10 @@ def main():
         choices=("configure", "build", "test", "run", "install", "package", "shell"),
     )
     parser.add_argument("--preset", choices=("debug", "release"), default="debug")
+    parser.add_argument("--config", type=Path, help="Simulated project JSON (run only)")
     args = parser.parse_args()
+    if args.config and args.action != "run":
+        parser.error("--config is only valid with run")
     if os.name != "nt":
         parser.error("This starter currently supports Windows LLVM-MinGW only.")
 
@@ -54,7 +57,8 @@ def main():
         if args.action == "test":
             run(cmake_bin / "ctest.exe", "--preset", preset)
         elif args.action == "run":
-            run(PROJECT_ROOT / "build" / preset / "bin/QTdemo.exe")
+            app_args = ["--config", str(args.config.resolve())] if args.config else []
+            run(PROJECT_ROOT / "build" / preset / "bin/QTdemo.exe", *app_args)
         elif args.action == "install":
             run(cmake_bin / "cmake.exe", "--install", f"build/{preset}")
         elif args.action == "package":

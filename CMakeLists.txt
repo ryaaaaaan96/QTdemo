@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(QTdemo VERSION 0.1.0 LANGUAGES CXX)
+project(QTdemo VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets Qml Quick QuickWidgets)
 qt_standard_project_setup()
 include(GNUInstallDirs)
 add_subdirectory(src)
@@ -18,7 +18,7 @@ if(BUILD_TESTING)
 endif()
 
 install(TARGETS QTdemo RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-qt_generate_deploy_app_script(
+qt_generate_deploy_qml_app_script(
     TARGET QTdemo
     OUTPUT_SCRIPT deploy_script
     NO_UNSUPPORTED_PLATFORM_ERROR

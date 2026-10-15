@@ -1,10 +1,41 @@
 # QTdemo
 
-Windows x64 桌面工程模板：Qt Widgets + LLVM-MinGW Clang + CMake + Ninja，使用 VS Code / clangd 开发，支持测试、EXE 安装包和 ZIP 便携包。
+Windows x64 工业数据工作台原型：Qt Widgets + QML、LLVM-MinGW Clang、CMake、Ninja，使用 VS Code / clangd 开发。当前 v0.2.0 实现模拟采集骨架，支持测试、EXE 安装包和 ZIP 便携包。
+
+## 设计文档
+
+项目已进入第一轮实现，仍只维护一篇设计文档；已实现范围与后续目标分开记录。
+
+| 文档 | 内容 | 状态 |
+| --- | --- | --- |
+| [多协议工业数据采集与监控平台设计稿](docs/industrial-platform-design.md) | 需求与架构、类与接口、线程生命周期、配置与 QML 更新、开发路线与待决策事项 | v1.3，含首个模拟运行里程碑 |
+
+本轮建议先阅读设计稿第 4～6 节（对象、接口与线程），再看第 8～9 节（配置和界面协作）。
+
+## 当前可运行功能
+
+- 两个模拟连接各自使用 I/O 线程；第一个连接运行 a1/b1，第二个运行 a2，a1/a2 使用同一协议实现和独立状态。
+- Widgets 点位表、可写点命令、连接/会话停止、失效值显示，以及有界采样缓存和命令队列。
+- 多个本地 QML 页面共享只读点位模型；手动重载入口文件，语法或导入加载失败保留旧页面。
+- 配置校验拒绝未知协议、硬件后端、重复 ID、无效引用和越界数值，不把真实设备配置偷偷转成模拟数据。
+
+真实 Modbus/CAN/串口、自动重连、RTU 转发、趋势与文件日志、配置差异应用、完整 QML 页面包版本/状态恢复尚未实现。文档中的未来 Modbus/CAN 示例不是当前可执行配置。
+
+运行 `python scripts/dev.py run` 会加载内置模拟配置。选中标记“可写”的设定值行后可发送命令；先停止全部连接才能打开新配置。停止 a1 后，b1 和 a2 继续采集；恢复 a1 时重启其所在连接。
+
+当前配置示例为 [simulated.json](config/examples/simulated.json)，也可以执行：
+
+```powershell
+python scripts/dev.py run --config config/examples/simulated.json
+```
+
+本阶段只支持 simulated 后端、simulated_counter/simulated_constant 两种模拟协议及双精度数值。point 的 initial/step 为模拟参数，access=read_write 表示可写。保护上限暂为 32 连接、128 会话和 4096 点，不代表设备容量指标；每连接最多 32 个在途/排队命令，全局最多 64 个，超限明确拒绝。
+
+可通过“新增 QML 页面”打开 [Dashboard.qml](src/ui/qml/Dashboard.qml) 的本地副本，再修改入口文件并重载。当前接口只暴露 pointModel；包含独立组件/模块的复杂页面应使用不同版本目录，完整依赖包更新尚待实现。
 
 ## 环境要求
 
-- Qt 6.8+ LLVM-MinGW x64 SDK，以及与其匹配的 LLVM-MinGW 工具链。
+- Qt 6.8+ LLVM-MinGW x64 SDK（Widgets、Qml、Quick、QuickWidgets、Test），以及匹配的 LLVM-MinGW 工具链。
 - Python 3.10+（只使用标准库，无需 pip 安装依赖）。
 - CMake 3.25+、Ninja；生成 EXE 安装包另需 Qt Installer Framework。
 - VS Code 推荐扩展：CMake Tools、clangd、CodeLLDB。
@@ -81,14 +112,17 @@ CPack 不会先编译。dev.py package 自动完成 Release 构建、测试和�
 QTdemo/
 ├── .vscode/             # 共享扩展、构建、调试配置
 ├── cmake/               # CPack 配置
+├── config/examples/     # 当前可执行的模拟配置
 ├── docs/                # 架构约定
 ├── packaging/           # 安装器脚本
 ├── resources/           # 图标、样式、翻译
 ├── scripts/             # 环境加载与开发命令
 ├── src/
 │   ├── app/             # 启动入口
-│   ├── core/            # 可测试业务规则
-│   └── ui/              # 窗口与控件
+│   ├── core/            # 值类型与协议会话接口
+│   ├── drivers/         # 当前为独立实例的模拟协议
+│   ├── services/        # 配置、数据缓存、运行管理、命令入口
+│   └── ui/              # Widgets、展示模型、QML 页面宿主
 ├── tests/               # 业务测试与启动检查
 ├── CMakeLists.txt
 ├── CMakePresets.json    # 共享预设，通过环境变量查找工具
@@ -96,14 +130,14 @@ QTdemo/
 └── tools.local.json     # 本机配置，不提交
 ```
 
-build/、stage/、dist/ 分别为编译、部署和发行输出，不提交。依赖方向为 app → ui → core，外部访问按需添加 services，见 [架构说明](docs/architecture.md)。
+build/、stage/、dist/ 分别为编译、部署和发行输出，不提交。方案与实现进度统一维护在 [平台设计稿](docs/industrial-platform-design.md)。
 
 ## 打包与发布
 
-- dist/QTdemo-0.1.0-windows-x64.exe：离线安装器，默认安装到当前用户 Applications/QTdemo，包含开始菜单快捷方式和卸载工具。
-- dist/QTdemo-0.1.0-windows-x64.zip：解压后运行 bin/QTdemo.exe。
+- dist/QTdemo-0.2.0-windows-x64.exe：离线安装器，默认安装到当前用户 Applications/QTdemo，包含开始菜单快捷方式和卸载工具。
+- dist/QTdemo-0.2.0-windows-x64.zip：解压后运行 bin/QTdemo.exe；examples/ 包含模拟配置及 QML 示例。
 
-Qt 部署脚本收集 Qt DLL 和平台插件，额外 install 规则收集 LLVM-MinGW 的 libc++.dll、libunwind.dll、libwinpthread-1.dll。新增第三方库或资源需补充部署规则。改用 QML 时需要 QML 专用部署流程。
+已使用 Qt QML 专用部署脚本收集导入模块、Qt DLL 和平台插件，额外 install 规则收集 LLVM-MinGW 的 libc++.dll、libunwind.dll、libwinpthread-1.dll。外部页面新增导入模块时仍需补齐部署依赖。
 
 正式发布前补齐产品名称、图标、日志配置、依赖许可材料、代码签名和升级策略。本模板尚未指定仓库开源许可证；发布者应根据自己的授权意图选择 LICENSE。
 
@@ -129,13 +163,15 @@ git push -u origin main
 
 ## 验证范围
 
-本机 Debug/Release 构建、业务测试与 GUI 冒烟检查已通过；发行 ZIP 已验证移除 Qt PATH 后可启动。clangd 定义查询已验证可从 UI 调用定位到业务源文件。
+验证包括配置错误、有界缓冲、多连接/会话隔离、写入超时不重放、退出结算、旧代次丢弃、QML 重载失败保留旧页及 GUI 启动退出。测试通过不代表真实 Modbus/CAN 已实现或已验收。运行结果以本次构建的 CTest 输出为准。
 
-尚未完成干净 Windows 上的安装、升级、卸载验证或 VS Code 交互式断点验证。当前环境缺少可选 Vulkan headers 和部分 Direct3D 编译器 DLL；Widgets 示例已通过，需要对应渲染能力时再补齐。
+2026-10-07：v0.2.0 的 Debug/Release 均通过 core_tests、page_tests、gui_smoke 三组检查；IFW/ZIP 已生成。ZIP 解压后仅保留 System32 PATH、禁用 QML 磁盘缓存，已验证示例配置、采样、QML 显示和正常退出；本机软件渲染及默认 Windows 渲染均已检查。
+
+尚未完成干净 Windows 上的安装、升级、卸载验证或 VS Code 交互式断点验证。自动 GUI 测试采用软件渲染；硬件渲染与不同显卡需要单独验证。
 
 ## 官方参考
 
 - [CMake Presets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
 - [clangd 配置](https://clangd.llvm.org/config)
-- [Qt 6.8 部署脚本](https://doc.qt.io/qt-6.8/qt-generate-deploy-app-script.html)
+- [Qt 6.8 QML 部署脚本](https://doc.qt.io/qt-6.8/qt-generate-deploy-qml-app-script.html)
 - [CPack IFW](https://cmake.org/cmake/help/latest/cpack_gen/ifw.html)
